@@ -53,6 +53,7 @@
   .player-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--bg); margin-bottom: 8px; }
   .player-row .av { font-size: 22px; }
   .player-row .nm { flex: 1; }
+  .player-row .badge { font-size: 12px; background: var(--brand); color: #fff; padding: 2px 8px; border-radius: 99px; }
   .player-row .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
   .player-row .dot.on { background: var(--good); }
   .muted { color: var(--muted); font-size: 14px; }
@@ -91,12 +92,6 @@
 <div id="offline">Menyambung ulang…</div>
 
 <script>
-/* =====================================================================
-   KuisKu Online (versi sederhana) – klien
-   Semua yang penting (soal, kunci jawaban, minimal pemain, skor)
-   ditentukan oleh fungsi backend di /api/*. Halaman ini hanya
-   menampilkan hasilnya dan mengambil status terbaru setiap ~1 detik.
-   ===================================================================== */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -169,7 +164,20 @@ function viewLobby(st) {
   const ready = st.connected >= st.min;
   const pct = Math.min(100, Math.round(st.connected / st.min * 100));
   const rows = st.players.map(p => `
-    <div class="player-row"><span class="av">${p.av}</span><span class="nm">${esc(p.name)}</span><span class="dot ${p.connected ? 'on' : ''}"></span></div>`).join('');
+    <div class="player-row">
+      <span class="av">${p.av}</span>
+      <span class="nm">${esc(p.name)}</span>
+      ${p.isHost ? '<span class="badge">Master</span>' : ''}
+      <span class="dot ${p.connected ? 'on' : ''}"></span>
+    </div>`).join('');
+
+  let actionButton = '';
+  if (st.isHost) {
+    actionButton = `<button class="btn" data-act="start" ${ready ? '' : 'disabled'} style="margin-top:8px">Mulai game</button>`;
+  } else {
+    actionButton = `<p class="muted center" style="margin-top:14px">Menunggu Room Master memulai permainan…</p>`;
+  }
+
   return `
     <div class="card center">
       <p class="muted">${esc(st.quizTitle)}</p>
@@ -180,9 +188,9 @@ function viewLobby(st) {
     <div class="card">
       <h2>Ruang tunggu (${st.connected}/${st.min} pemain)</h2>
       <div class="progress"><div class="${ready ? 'ready' : ''}" style="width:${pct}%"></div></div>
-      <p class="muted" style="margin-bottom:14px">${ready ? 'Pemain sudah cukup, game siap dimulai.' : `Menunggu ${st.min - st.connected} pemain lagi…`}</p>
+      <p class="muted" style="margin-bottom:14px">${ready ? (st.isHost ? 'Pemain sudah cukup, klik Mulai untuk jalan.' : 'Pemain cukup, menunggu Room Master memulai…') : `Menunggu ${st.min - st.connected} pemain lagi…`}</p>
       ${rows}
-      <button class="btn" data-act="start" ${ready ? '' : 'disabled'} style="margin-top:8px">Mulai game</button>
+      ${actionButton}
     </div>`;
 }
 
@@ -271,7 +279,7 @@ function enterRoom(r) {
 }
 function onState(st) {
   C.st = st; C.skew = st.now - Date.now();
-  const key = st.phase + ':' + (st.q ? st.q.index : '');
+  const key = st.phase + ':' + (st.q ? st.q.index : '') + ':' + st.connected;
   if (key !== C.renderKey) { C.renderKey = key; C.picked = st.q ? st.q.picked : -1; render(); }
   else if (st.phase === 'question') { const el = $('#zone'); if (el) el.innerHTML = zoneHTML(st); }
   else render();
