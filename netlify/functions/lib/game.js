@@ -64,7 +64,12 @@ function tick(room, now) {
 
 function startGame(room, now) {
   const quiz = findQuiz(room.quizId);
-  room.questions = shuffle(quiz.questions).map(q => ({ q: q.q, opts: shuffle(q.options.map((t) => ({ t, isCorrect: t === q.answer }))) }));
+  room.questions = shuffle(quiz.questions).map(q => ({ 
+    q: q.q, 
+    // 1. shuffle() pada opsi dihapus agar urutan A, B, C, D tidak diacak
+    // 2. Ditambahkan String(...) agar angka 12 dan teks "12" terbaca sama/benar
+    opts: q.options.map((t) => ({ t, isCorrect: String(t) === String(q.answer) })) 
+  }));
   room.qIndex = 0;
   for (const id of room.order) { const p = room.players[id]; p.score = 0; p.answer = null; p.lastGain = 0; }
   room.phase = 'countdown'; room.phaseEndsAt = now + COUNTDOWN_MS;
