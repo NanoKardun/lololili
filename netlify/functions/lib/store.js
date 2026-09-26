@@ -9,7 +9,15 @@
    baca ulang dan coba lagi — supaya data tidak saling menimpa.
    ===================================================================== */
 const { getStore } = require('@netlify/blobs');
-const store = () => getStore({ name: 'kuisku-rooms', consistency: 'strong' });
+
+// Ditambahkan siteID dan token secara eksplisit agar Netlify Blobs mengenali kredensial
+const store = () => getStore({ 
+  name: 'kuisku-rooms', 
+  consistency: 'strong',
+  siteID: process.env.NETLIFY_SITE_ID,
+  token: process.env.NETLIFY_AUTH_TOKEN
+});
+
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function withRoom(code, fn, retries = 5) {
