@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KuisKu Online</title>
+<style>
+  :root{
+    --bg:#f1efff; --ink:#221b4d; --muted:#6b6690; --card:#ffffff; --line:#dcd8f5;
+    --brand:#5b3df5; --brand-d:#4327d1; --good:#1fa66a; --bad:#e5484d;
+    --c1:#e5484d; --c2:#2f6fed; --c3:#e0a100; --c4:#1fa66a;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#17133a; --ink:#f2f0ff; --muted:#a9a3d6; --card:#221d52; --line:#3a3378; }
+  }
+  * { box-sizing: border-box; }
+  html { padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-weight: 700;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  h1, h2, h3 { margin: 0; }
+  #app { max-width: 640px; margin: 0 auto; padding: 20px 16px 60px; }
+  header { display: flex; justify-content: space-between; align-items: center; height: 44px; margin-bottom: 16px; }
+  .logo { font-size: 24px; font-weight: 800; }
+  .card { background: var(--card); border: 2px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: 0 4px 0 var(--line); }
+  .card + .card { margin-top: 16px; }
+  input[type=text] {
+    width: 100%; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--line);
+    background: var(--bg); color: var(--ink); font: inherit; font-weight: 700;
+  }
+  label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 14px;
+    padding: 13px 20px; background: var(--brand); color: #fff; font: inherit; font-weight: 800; cursor: pointer;
+    box-shadow: 0 4px 0 var(--brand-d); width: 100%;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--brand-d); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn.ghost { background: var(--card); color: var(--ink); border: 2px solid var(--line); box-shadow: 0 4px 0 var(--line); }
+  .btn.small { width: auto; padding: 9px 14px; font-size: 14px; }
+  .err { min-height: 20px; color: var(--bad); font-size: 14px; margin-top: 8px; }
+  .quiz-list { display: grid; gap: 10px; margin-bottom: 16px; }
+  .quiz-opt {
+    text-align: left; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--line);
+    background: var(--bg); cursor: pointer; font: inherit; font-weight: 700; color: var(--ink);
+  }
+  .quiz-opt.sel { border-color: var(--brand); background: var(--card); }
+  .quiz-opt small { display: block; color: var(--muted); font-weight: 500; margin-top: 2px; }
+  .code-box { font-size: 46px; text-align: center; letter-spacing: .2em; padding-left: .2em; font-weight: 800; margin: 6px 0; }
+  .player-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--bg); margin-bottom: 8px; }
+  .player-row .av { font-size: 22px; }
+  .player-row .nm { flex: 1; }
+  .player-row .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+  .player-row .dot.on { background: var(--good); }
+  .muted { color: var(--muted); font-size: 14px; }
+  .progress { height: 12px; border-radius: 99px; background: var(--line); overflow: hidden; margin: 10px 0; }
+  .progress > div { height: 100%; background: var(--c3); border-radius: 99px; transition: width .3s; }
+  .progress > div.ready { background: var(--good); }
+  .timer-bar { height: 12px; border-radius: 99px; background: var(--line); overflow: hidden; margin-bottom: 6px; }
+  .timer-bar > div { height: 100%; border-radius: 99px; }
+  .qtext { font-size: 22px; text-align: center; padding: 20px 6px; }
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .opt {
+    color: #fff; border: 0; border-radius: 14px; min-height: 90px; padding: 12px; font: inherit; font-weight: 800;
+    text-align: left; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,.25); font-size: 16px;
+  }
+  .opt:disabled { cursor: default; }
+  .opt.o0 { background: var(--c1); } .opt.o1 { background: var(--c2); } .opt.o2 { background: var(--c3); } .opt.o3 { background: var(--c4); }
+  .opt.dim { opacity: .35; }
+  .opt.right { outline: 4px solid var(--good); outline-offset: 3px; }
+  .opt.wrong { outline: 4px solid var(--bad); outline-offset: 3px; }
+  .banner { border-radius: 14px; padding: 14px 16px; color: #fff; text-align: center; margin-top: 14px; }
+  .banner.ok { background: var(--good); } .banner.no { background: var(--bad); }
+  .center { text-align: center; }
+  .big-num { font-size: 90px; font-weight: 800; color: var(--brand); line-height: 1; margin: 10px 0; }
+  ul.standings { list-style: none; padding: 0; margin: 0; }
+  ul.standings li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--bg); margin-bottom: 6px; }
+  ul.standings li .rank { width: 22px; color: var(--muted); }
+  #offline {
+    position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); background: var(--ink); color: var(--bg);
+    padding: 10px 18px; border-radius: 99px; font-size: 14px; display: none; z-index: 10;
+  }
+  #offline.show { display: block; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="offline">Menyambung ulang…</div>
+
+<script>
+/* =====================================================================
+   KuisKu Online (versi sederhana) – klien
+   Semua yang penting (soal, kunci jawaban, minimal pemain, skor)
+   ditentukan oleh fungsi backend di /api/*. Halaman ini hanya
+   menampilkan hasilnya dan mengambil status terbaru setiap ~1 detik.
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const sess = {
+  get(k, d) { try { const v = sessionStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { sessionStorage.removeItem(k); } catch (e) {} }
+};
+
+async function api(path, body) {
+  const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+  let data = {}; try { data = await r.json(); } catch (e) {}
+  if (!r.ok) {
+    let msg = data.error || 'Terjadi kesalahan.';
+    if (data.debug) msg += ' (detail: ' + data.debug + ')';
+    const err = new Error(msg); err.status = r.status; throw err;
+  }
+  return data;
+}
+
+const C = {
+  name: store.get('kq_name', ''), quizzes: [], quizId: '', joinCode: '',
+  session: sess.get('kq_session', null), st: null, skew: 0, picked: -1, err: '',
+  poller: null, inFlight: false, renderKey: ''
+};
+const authBody = () => ({ code: C.session.code, pid: C.session.pid, token: C.session.token });
+
+function render() {
+  const inRoom = !!C.session;
+  const head = `<header><span class="logo">🎯 KuisKu</span>${inRoom ? `<button class="btn ghost small" data-act="leave">Keluar</button>` : ''}</header>`;
+  let body;
+  if (!inRoom) body = viewHome();
+  else if (!C.st) body = `<div class="card center"><p class="muted">Menyambungkan ke ruang…</p></div>`;
+  else body = ({ lobby: viewLobby, countdown: viewCountdown, question: viewGame, reveal: viewGame, finished: viewResult }[C.st.phase] || viewLobby)(C.st);
+  $('#app').innerHTML = head + body;
+}
+
+/* ---------- Beranda ---------- */
+function viewHome() {
+  const quizButtons = C.quizzes.map(z => `
+    <button class="quiz-opt ${z.id === C.quizId ? 'sel' : ''}" data-act="pick" data-id="${esc(z.id)}">
+      ${esc(z.title)}<small>${z.count} soal</small>
+    </button>`).join('') || '<p class="muted">Memuat daftar kuis…</p>';
+  return `
+    <div class="card">
+      <label for="nm">Nama pemain</label>
+      <input id="nm" type="text" maxlength="16" placeholder="Tulis namamu" value="${esc(C.name)}">
+      <p class="err">${esc(C.err)}</p>
+    </div>
+    <div class="card">
+      <h2>Buat ruang baru</h2>
+      <p class="muted" style="margin:6px 0 14px">Pilih kuis, lalu bagikan kode ke temanmu.</p>
+      <div class="quiz-list">${quizButtons}</div>
+      <button class="btn" data-act="create">Buat ruang</button>
+    </div>
+    <div class="card">
+      <h2>Gabung dengan kode</h2>
+      <p class="muted" style="margin:6px 0 14px">Masukkan kode 5 karakter dari temanmu.</p>
+      <input id="code" type="text" maxlength="5" placeholder="ABCDE" autocapitalize="characters" value="${esc(C.joinCode)}" style="text-align:center;font-size:22px;letter-spacing:.2em;margin-bottom:12px">
+      <button class="btn" data-act="join">Gabung</button>
+    </div>`;
+}
+
+/* ---------- Ruang tunggu ---------- */
+function viewLobby(st) {
+  const ready = st.connected >= st.min;
+  const pct = Math.min(100, Math.round(st.connected / st.min * 100));
+  const rows = st.players.map(p => `
+    <div class="player-row"><span class="av">${p.av}</span><span class="nm">${esc(p.name)}</span><span class="dot ${p.connected ? 'on' : ''}"></span></div>`).join('');
+  return `
+    <div class="card center">
+      <p class="muted">${esc(st.quizTitle)}</p>
+      <p class="muted" style="margin-top:10px">Kode ruang</p>
+      <div class="code-box">${esc(st.code)}</div>
+      <p class="muted">Bagikan kode ini ke teman yang ingin ikut main.</p>
+    </div>
+    <div class="card">
+      <h2>Ruang tunggu (${st.connected}/${st.min} pemain)</h2>
+      <div class="progress"><div class="${ready ? 'ready' : ''}" style="width:${pct}%"></div></div>
+      <p class="muted" style="margin-bottom:14px">${ready ? 'Pemain sudah cukup, game siap dimulai.' : `Menunggu ${st.min - st.connected} pemain lagi…`}</p>
+      ${rows}
+      <button class="btn" data-act="start" ${ready ? '' : 'disabled'} style="margin-top:8px">Mulai game</button>
+    </div>`;
+}
+
+/* ---------- Hitung mundur ---------- */
+function viewCountdown(st) {
+  const n = Math.max(1, Math.ceil((st.endsAt - (Date.now() + C.skew)) / 1000));
+  return `<div class="card center"><p class="muted">Bersiap, game dimulai…</p><div id="cd" class="big-num">${n}</div></div>`;
+}
+
+/* ---------- Game ---------- */
+function pickedIdx(st) { return C.picked >= 0 ? C.picked : st.q.picked; }
+function optsHTML(st) {
+  const q = st.q, rev = st.phase === 'reveal', picked = pickedIdx(st);
+  return q.options.map((t, i) => {
+    let cls = 'opt o' + i;
+    if (rev) { if (i === st.reveal.correct) cls += ' right'; else if (i === picked) cls += ' wrong'; else cls += ' dim'; }
+    else if (picked >= 0 && i !== picked) cls += ' dim';
+    const locked = rev || picked >= 0;
+    return `<button class="${cls}" data-act="ans" data-i="${i}" ${locked ? 'disabled' : ''}>${esc(t)}</button>`;
+  }).join('');
+}
+function zoneHTML(st) {
+  if (st.phase === 'reveal') {
+    const ok = st.reveal.gain > 0;
+    return `<div class="banner ${ok ? 'ok' : 'no'}">${ok ? 'Benar! +' + st.reveal.gain + ' poin' : 'Belum tepat'}</div>`;
+  }
+  if (pickedIdx(st) >= 0) return `<p class="muted center" style="margin-top:14px">Menunggu pemain lain (${st.q.answeredCount}/${st.q.needed})…</p>`;
+  return `<p class="muted center" style="margin-top:14px">Pilih salah satu jawaban di atas.</p>`;
+}
+function viewGame(st) {
+  const q = st.q, left = Math.max(0, q.endsAt - (Date.now() + C.skew)), total = 15000;
+  const ratio = Math.min(1, left / total);
+  return `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span class="muted">Soal ${q.index + 1}/${q.total}</span>
+        <span class="muted">Skor: ${st.you.score}</span>
+      </div>
+      <div class="timer-bar"><div id="tbar" style="width:${(ratio * 100).toFixed(0)}%;background:${ratio > .5 ? 'var(--good)' : ratio > .25 ? 'var(--c3)' : 'var(--bad)'}"></div></div>
+      <div class="qtext">${esc(q.text)}</div>
+      <div class="opts">${optsHTML(st)}</div>
+      <div id="zone">${zoneHTML(st)}</div>
+    </div>`;
+}
+
+/* ---------- Hasil ---------- */
+function viewResult(st) {
+  const rows = st.standings.map((p, i) => `
+    <li><span class="rank">${i + 1}</span><span class="av">${p.av}</span><span class="nm" style="flex:1">${esc(p.name)}</span><b>${p.score}</b></li>`).join('');
+  return `
+    <div class="card center">
+      <h1>Game selesai!</h1>
+      <p class="muted">${esc(st.quizTitle)}</p>
+    </div>
+    <div class="card">
+      <h2>Hasil akhir</h2>
+      <ul class="standings" style="margin-top:12px">${rows}</ul>
+    </div>
+    <button class="btn ghost" data-act="leave" style="margin-top:16px">Kembali ke beranda</button>`;
+}
+
+/* ---------- Polling ---------- */
+function setOffline(v) { $('#offline').classList.toggle('show', v); }
+async function pollOnce() {
+  if (!C.session || C.inFlight) return;
+  C.inFlight = true;
+  try {
+    const st = await api('/api/state', authBody());
+    setOffline(false);
+    onState(st);
+  } catch (e) {
+    if (e.status === 401 || e.status === 404) endSession(e.message);
+    else setOffline(true);
+  } finally { C.inFlight = false; }
+}
+function startPolling() { stopPolling(); pollOnce(); C.poller = setInterval(pollOnce, 1000); }
+function stopPolling() { if (C.poller) clearInterval(C.poller); C.poller = null; setOffline(false); }
+function endSession(msg) {
+  stopPolling(); C.session = null; C.st = null; C.picked = -1; C.renderKey = ''; C.err = msg || '';
+  sess.del('kq_session'); render();
+}
+function enterRoom(r) {
+  C.session = { code: r.code, pid: r.pid, token: r.token }; sess.set('kq_session', C.session);
+  C.st = null; C.renderKey = ''; C.picked = -1; C.err = '';
+  render(); startPolling();
+}
+function onState(st) {
+  C.st = st; C.skew = st.now - Date.now();
+  const key = st.phase + ':' + (st.q ? st.q.index : '');
+  if (key !== C.renderKey) { C.renderKey = key; C.picked = st.q ? st.q.picked : -1; render(); }
+  else if (st.phase === 'question') { const el = $('#zone'); if (el) el.innerHTML = zoneHTML(st); }
+  else render();
+}
+setInterval(() => {
+  const st = C.st; if (!st) return;
+  const t = Date.now() + C.skew;
+  if (st.phase === 'countdown') { const el = $('#cd'); if (el) el.textContent = Math.max(1, Math.ceil((st.endsAt - t) / 1000)); }
+  else if (st.phase === 'question') {
+    const left = Math.max(0, st.q.endsAt - t), r = Math.min(1, left / 15000);
+    const bar = $('#tbar'); if (bar) { bar.style.width = (r * 100) + '%'; bar.style.background = r > .5 ? 'var(--good)' : r > .25 ? 'var(--c3)' : 'var(--bad)'; }
+  }
+}, 200);
+
+/* ---------- Aksi ---------- */
+function setErr(m) { C.err = m; render(); }
+async function createRoom() {
+  const name = C.name.trim();
+  if (!name) return setErr('Isi namamu dulu.');
+  if (!C.quizId) return setErr('Pilih kuis dulu.');
+  try { enterRoom(await api('/api/create', { name, quizId: C.quizId })); } catch (e) { setErr(e.message); }
+}
+async function joinRoom() {
+  const name = C.name.trim(), code = C.joinCode.trim().toUpperCase();
+  if (!name) return setErr('Isi namamu dulu.');
+  if (code.length < 5) return setErr('Kode ruang terdiri dari 5 karakter.');
+  try { enterRoom(await api('/api/join', { name, code })); } catch (e) { setErr(e.message); }
+}
+async function pick(i) {
+  const st = C.st;
+  if (!st || st.phase !== 'question' || pickedIdx(st) >= 0) return;
+  C.picked = i; render();
+  try { await api('/api/answer', { ...authBody(), idx: i }); pollOnce(); } catch (e) { C.picked = -1; render(); }
+}
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'nm') { C.name = e.target.value; store.set('kq_name', C.name); }
+  if (e.target.id === 'code') { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); e.target.value = v; C.joinCode = v; }
+});
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  switch (el.dataset.act) {
+    case 'pick':   C.quizId = el.dataset.id; render(); break;
+    case 'create': createRoom(); break;
+    case 'join':   joinRoom(); break;
+    case 'start':  api('/api/start', authBody()).then(pollOnce).catch(err => setErr(err.message)); break;
+    case 'ans':    pick(+el.dataset.i); break;
+    case 'leave':  endSession(''); break;
+  }
+});
+
+(async function boot() {
+  render();
+  if (C.session) startPolling();
+  try {
+    C.quizzes = await (await fetch('/api/quizzes')).json();
+    if (!C.quizId && C.quizzes.length) C.quizId = C.quizzes[0].id;
+    if (!C.session) render();
+  } catch (e) { setErr('Tidak bisa terhubung ke server.'); }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "kuisku-simple",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Game kuis multiplayer sederhana (lobi online, minimal 2 pemain) untuk Netlify. HTML/CSS polos + Netlify Functions ringan.",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
