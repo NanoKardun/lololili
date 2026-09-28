@@ -14,8 +14,16 @@ const REVEAL_MS       = 4000;
 const HEARTBEAT_MS    = 8000;  
 const POINTS_CORRECT  = 100;
 
+// Menentukan indeks jawaban benar. "answer" boleh berupa nomor (0-3) ATAU teks yang sama
+// persis dengan salah satu pilihan. Mengembalikan -1 kalau data soalnya tidak valid.
+function correctIndex(q) {
+  if (Number.isInteger(q.answer)) return (q.answer >= 0 && q.answer < q.options.length) ? q.answer : -1;
+  return q.options.findIndex(t => String(t) === String(q.answer));
+}
+
 const QUIZZES = QUIZZES_RAW.filter(z => z && z.id && z.title && Array.isArray(z.questions) && z.questions.length &&
-  z.questions.every(q => q && q.q && Array.isArray(q.options) && q.options.length === 4));
+  z.questions.every(q => q && q.q && Array.isArray(q.options) && q.options.length === 4 && correctIndex(q) !== -1));
+if (QUIZZES.length !== QUIZZES_RAW.length) console.error('[kuisku] Ada kuis dengan format salah (jumlah pilihan bukan 4 atau answer tidak cocok) dan dilewati. Cek quiz-data.js.');
 
 const AVATARS = ['🦊', '🐼', '🐯', '🦄', '🐸', '🐙', '🐧', '🦁', '🐨', '🐵'];
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -66,9 +74,9 @@ function startGame(room, now) {
   const quiz = findQuiz(room.quizId);
   room.questions = shuffle(quiz.questions).map(q => ({ 
     q: q.q, 
-    // 1. shuffle() pada opsi dihapus agar urutan A, B, C, D tidak diacak
-    // 2. Ditambahkan String(...) agar angka 12 dan teks "12" terbaca sama/benar
-    opts: q.options.map((t) => ({ t, isCorrect: String(t) === String(q.answer) })) 
+    // Urutan pilihan A, B, C, D tidak diacak. Jawaban benar ditentukan lewat indeks
+    // (answer: 0 = pilihan pertama), BUKAN dengan membandingkan teks pilihan dengan angka answer.
+    opts: q.options.map((t, i) => ({ t, isCorrect: i === correctIndex(q) }))
   }));
   room.qIndex = 0;
   for (const id of room.order) { const p = room.players[id]; p.score = 0; p.answer = null; p.lastGain = 0; }
