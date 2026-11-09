@@ -10,12 +10,10 @@
    ===================================================================== */
 const { getStore } = require('@netlify/blobs');
 
-// Ditambahkan siteID dan token secara eksplisit agar Netlify Blobs mengenali kredensial
+// Diperbaiki: Hapus siteID dan token manual agar otomatis terdeteksi oleh sistem Netlify
 const store = () => getStore({ 
   name: 'kuisku-rooms', 
-  consistency: 'strong',
-  siteID: process.env.NETLIFY_SITE_ID,
-  token: process.env.NETLIFY_AUTH_TOKEN
+  consistency: 'strong'
 });
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
