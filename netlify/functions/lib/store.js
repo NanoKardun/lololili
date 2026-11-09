@@ -49,4 +49,4 @@ async function createRoom(code, room) {
   }
 }
 
-module.exports = { withRoom, createRoom };
+module.exports = { withRoom, createRoom, connectLambda };
