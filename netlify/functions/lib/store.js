@@ -8,12 +8,14 @@
    yang "menyalip" di tengah jalan (dua pemain menjawab bersamaan),
    baca ulang dan coba lagi — supaya data tidak saling menimpa.
    ===================================================================== */
-const { getStore, connectLambda } = require('@netlify/blobs');
+const { getStore } = require('@netlify/blobs');
 
-// Diperbaiki: Hapus siteID dan token manual agar otomatis terdeteksi oleh sistem Netlify
+// connectLambda sengaja dibuat kosong: kita pakai kredensial manual (API mode),
+// jadi tidak perlu konteks edge dari Netlify.
+const connectLambda = () => {};
+
 const store = () => getStore({
   name: 'kuisku-rooms',
-  consistency: 'strong',
   siteID: process.env.BLOBS_SITE_ID,
   token: process.env.BLOBS_TOKEN,
 });
