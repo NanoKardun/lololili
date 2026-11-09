@@ -11,9 +11,11 @@
 const { getStore, connectLambda } = require('@netlify/blobs');
 
 // Diperbaiki: Hapus siteID dan token manual agar otomatis terdeteksi oleh sistem Netlify
-const store = () => getStore({ 
-  name: 'kuisku-rooms', 
-  consistency: 'strong'
+const store = () => getStore({
+  name: 'kuisku-rooms',
+  consistency: 'strong',
+  siteID: process.env.BLOBS_SITE_ID,
+  token: process.env.BLOBS_TOKEN,
 });
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
