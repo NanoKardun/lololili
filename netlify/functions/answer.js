@@ -1,6 +1,6 @@
 'use strict';
 const { tick, submitAnswer } = require('./lib/game');
-const { withRoom } = require('./lib/store');
+const { withRoom, connectLambda } = require('./lib/store');
 
 function json(status, obj) { return { statusCode: status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, body: JSON.stringify(obj) }; }
 
