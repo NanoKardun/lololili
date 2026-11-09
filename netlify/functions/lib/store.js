@@ -8,7 +8,7 @@
    yang "menyalip" di tengah jalan (dua pemain menjawab bersamaan),
    baca ulang dan coba lagi — supaya data tidak saling menimpa.
    ===================================================================== */
-const { getStore } = require('@netlify/blobs');
+const { getStore, connectLambda } = require('@netlify/blobs');
 
 // Diperbaiki: Hapus siteID dan token manual agar otomatis terdeteksi oleh sistem Netlify
 const store = () => getStore({ 
