@@ -1,10 +1,11 @@
 'use strict';
 const { newPlayer, cleanName, tick, MAX_PLAYERS } = require('./lib/game');
-const { withRoom } = require('./lib/store');
+const { withRoom, connectLambda } = require('./lib/store');
 
 function json(status, obj) { return { statusCode: status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, body: JSON.stringify(obj) }; }
 
 exports.handler = async (event) => {
+  connectLambda(event);
   if (event.httpMethod !== 'POST') return json(405, { error: 'Metode tidak diizinkan.' });
   let b; try { b = JSON.parse(event.body || '{}'); } catch (e) { return json(400, { error: 'Permintaan tidak valid.' }); }
   const name = cleanName(b.name);
